@@ -1,0 +1,512 @@
+{
+  "name": "Job Post Email",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyHour"
+            },
+            {}
+          ]
+        },
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1100,
+        -220
+      ],
+      "id": "8889a709-c7a1-4314-909f-ce549aa6ab68",
+      "name": "Gmail Trigger",
+      "notesInFlow": true,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "TcZFCLjqkE7FVDDU",
+          "name": "Gmail account"
+        }
+      },
+      "notes": "Check email from Indeed"
+    },
+    {
+      "parameters": {
+        "inputText": "=Message Snippet: {{ $json.snippet }}\nEmail Subject:{{ $json.Subject }}\nFrom: {{ $json.From }}\nDate: {{ $json.internalDate }}\nThreadId:{{ $json.threadId }}",
+        "categories": {
+          "categories": [
+            {
+              "category": "RECRUITMENT",
+              "description": "If the context of the email is related to Job posting"
+            },
+            {
+              "category": "PROMOTION",
+              "description": "If the context of the email is related to any type of promotion."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textClassifier",
+      "typeVersion": 1,
+      "position": [
+        -940,
+        -220
+      ],
+      "id": "c7c6c83c-029f-4371-9bd9-cefeb42e801e",
+      "name": "Text Classifier"
+    },
+    {
+      "parameters": {
+        "model": "mistral-tiny",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatMistralCloud",
+      "typeVersion": 1,
+      "position": [
+        -940,
+        -20
+      ],
+      "id": "6a8076cf-5331-44fb-ba8c-5625680fb309",
+      "name": "Mistral Cloud Chat Model",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "wUXMbSoJEL03e2RJ",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputText": "no",
+        "options": {
+          "categories": "Positive, Neutral, Negative",
+          "systemPromptTemplate": "You are highly intelligent and accurate sentiment analyzer. Analyze the sentiment of the provided text. Categorize it into one of the following: {categories}. Use the provided formatting instructions. Only output the JSON."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.sentimentAnalysis",
+      "typeVersion": 1,
+      "position": [
+        -540,
+        -320
+      ],
+      "id": "b6cea51d-fe4d-4ae8-bacd-ecbca63b4808",
+      "name": "Sentiment Analysis"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1WgT3tVZ1cXQ-5kXmCE7cvta_0aXNI2wPvzvY0gJCpyE/edit?usp=sharing",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Oppurtunity",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1WgT3tVZ1cXQ-5kXmCE7cvta_0aXNI2wPvzvY0gJCpyE/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Sender": "={{ $json.From }}",
+            "Subject": "={{ $json.Subject }}",
+            "Message Snippet": "={{ $json.snippet }}",
+            "ThreadID": "={{ $json.threadId }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ThreadID",
+              "displayName": "ThreadID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Sender",
+              "displayName": "Sender",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Subject",
+              "displayName": "Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Message Snippet",
+              "displayName": "Message Snippet",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        60,
+        -320
+      ],
+      "id": "516d2479-08bc-4da3-ad7a-8a0adb298ed3",
+      "name": "Opportunity",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "IcPTJeKOYsFy4BRy",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1WgT3tVZ1cXQ-5kXmCE7cvta_0aXNI2wPvzvY0gJCpyE/edit?usp=sharing",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2147161206,
+          "mode": "list",
+          "cachedResultName": "GoodNews",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1WgT3tVZ1cXQ-5kXmCE7cvta_0aXNI2wPvzvY0gJCpyE/edit#gid=2147161206"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Sender": "={{ $json.From }}",
+            "Subject": "={{ $json.Subject }}",
+            "Message Snippet": "={{ $json.snippet }}",
+            "ThreadID": "={{ $json.threadId }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ThreadID",
+              "displayName": "ThreadID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Sender",
+              "displayName": "Sender",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Subject",
+              "displayName": "Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Message Snippet",
+              "displayName": "Message Snippet",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -120,
+        -440
+      ],
+      "id": "7e57a82c-be15-4489-bdce-dec136e88d7d",
+      "name": "Goodnews",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "IcPTJeKOYsFy4BRy",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1WgT3tVZ1cXQ-5kXmCE7cvta_0aXNI2wPvzvY0gJCpyE/edit?usp=sharing",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Oppurtunity",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1WgT3tVZ1cXQ-5kXmCE7cvta_0aXNI2wPvzvY0gJCpyE/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Sender": "={{ $json.From }}",
+            "Subject": "={{ $json.Subject }}",
+            "Message Snippet": "={{ $json.snippet }}",
+            "ThreadID": "={{ $json.threadId }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ThreadID",
+              "displayName": "ThreadID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Sender",
+              "displayName": "Sender",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Subject",
+              "displayName": "Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Message Snippet",
+              "displayName": "Message Snippet",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -120,
+        -180
+      ],
+      "id": "2a427756-23da-4313-a1ff-1fc66f3b7327",
+      "name": "Sorry",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "IcPTJeKOYsFy4BRy",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-3-5-haiku-20241022",
+          "mode": "list",
+          "cachedResultName": "Claude 3.5 Haiku"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        -500,
+        -140
+      ],
+      "id": "1eb37bd7-ee6e-4b2e-9214-faa0510fe4f6",
+      "name": "Anthropic Chat Model",
+      "credentials": {
+        "anthropicApi": {
+          "id": "ZAsorh1MWa8g2rQS",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "markAsRead",
+        "messageId": "={{ $('Sentiment Analysis').item.json.id }}"
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        140,
+        160
+      ],
+      "id": "ac07beb7-b2d4-40d4-9a7b-ed3f0acd7391",
+      "name": "Mark As Read",
+      "webhookId": "d0351c62-5772-46c4-87bb-29b63fbd0def",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "TcZFCLjqkE7FVDDU",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mistral Cloud Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Text Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Classifier": {
+      "main": [
+        [
+          {
+            "node": "Sentiment Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Sentiment Analysis": {
+      "main": [
+        [
+          {
+            "node": "Goodnews",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Opportunity",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sorry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Opportunity": {
+      "main": [
+        [
+          {
+            "node": "Mark As Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Sentiment Analysis",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sorry": {
+      "main": [
+        [
+          {
+            "node": "Mark As Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Goodnews": {
+      "main": [
+        [
+          {
+            "node": "Mark As Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e282d0e5-dcff-4d22-8351-8361014cad9d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f57e1aff5727752c33e6236763007ae1cfaf28002896a1e81955adfba6c7fadd"
+  },
+  "id": "R0l2Zrg14Av3BWel",
+  "tags": []
+}
